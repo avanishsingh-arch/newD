@@ -1,0 +1,26 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #f5f6fa;
+  --bg-card: #ffffff;
+  --bg-row-alt: #f9f9fb;
+  --border: #e5e7ef;
+  --text-primary: #1a1d2e;
+  --text-muted: #6b7080;
+  --accent: #3266ad;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+}
