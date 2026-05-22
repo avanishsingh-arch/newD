@@ -5,7 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import type { Ticket } from "@/lib/types";
 import { formatMinutes } from "@/lib/workingHours";
 import { isResolved, filterByPeriod, getPeriodKeys, getTicketKey, CHART_COLORS } from "@/lib/utils";
-import PeriodToggle, { type Period } from "./PeriodToggle"
+import PeriodToggle, { type Period } from "./PeriodT"
 
 type ViewMode = "single" | "compare";
 

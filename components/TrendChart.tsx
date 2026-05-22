@@ -5,8 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import type { Ticket } from "@/lib/types";
 import { formatMinutes } from "@/lib/workingHours";
 import { isResolved, filterByPeriod, getPeriodKeys, getTicketKey } from "@/lib/utils";
-import PeriodToggle, { type Period } from "./Periodtoggle"
-
+import PeriodToggle, { type Period } from "./PeriodT"
 const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
   if (!active || !payload?.length) return null;
   return (

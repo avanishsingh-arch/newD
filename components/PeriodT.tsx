@@ -15,7 +15,7 @@ const LABELS: Record<Period, string> = {
   year:  "Yearly",
 };
 
-export default function PeriodToggle({ value, onChange }: Props) {
+export default function PeriodT({ value, onChange }: Props) {
   return (
     <div style={{ display: "flex", gap: 4 }}>
       {(["week", "month", "year"] as Period[]).map((p) => (
