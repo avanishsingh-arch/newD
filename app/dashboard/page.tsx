@@ -199,7 +199,7 @@ export default function DashboardPage() {
               }}
             >
               <SectionTitle>Daily trend — L{trendDays}</SectionTitle>
-              <TrendChart tickets={allTickets} days={trendDays} />
+              <TrendChart tickets={allTickets} />
             </div>
 
             {/* ── Agent table ── */}
