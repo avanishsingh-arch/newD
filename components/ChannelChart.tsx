@@ -8,7 +8,7 @@ import {
 import type { Ticket, ChannelStats } from "@/lib/types";
 import { channelColor, shortChannelName, filterByPeriod } from "@/lib/utils";
 import { formatMinutes } from "@/lib/workingHours";
-import PeriodToggle ,{type Period} from "./Periodtoggle"
+import PeriodToggle ,{type Period} from "./PeriodToggle"
 
 const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   if (!active || !payload?.length) return null;

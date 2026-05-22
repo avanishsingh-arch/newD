@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import type { Ticket, AgentStats } from "@/lib/types";
 import { formatMinutes } from "@/lib/workingHours";
 import { isResolved, filterByPeriod } from "@/lib/utils";
-import PeriodToggle, { type Period } from "./Periodtoggle"
+import PeriodToggle, { type Period } from "./PeriodToggle"
 
 type SortKey = "total" | "resolved" | "resRate" | "avgRes";
 
