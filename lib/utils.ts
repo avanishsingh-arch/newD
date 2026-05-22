@@ -41,3 +41,41 @@ export function isResolved(t: Ticket): boolean {
   const s = (t.status || "").toLowerCase();
   return s.includes("closed") || s.includes("resolved");
 }
+
+// ── Period filtering ──────────────────────────────────────────────────────
+export type Period = "week" | "month" | "year";
+
+export function filterByPeriod(tickets: Ticket[], period: Period): Ticket[] {
+  const now = new Date();
+  let cutoff: Date;
+  if (period === "week") {
+    cutoff = new Date(now); cutoff.setDate(now.getDate() - 7); cutoff.setHours(0,0,0,0);
+  } else if (period === "month") {
+    cutoff = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+  } else {
+    cutoff = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+  }
+  return tickets.filter((t) => t.createdOn && t.createdOn >= cutoff);
+}
+
+export function getPeriodKeys(period: Period): string[] {
+  const now = new Date();
+  const keys: string[] = [];
+  if (period === "week") {
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now); d.setDate(d.getDate() - i);
+      keys.push(d.toLocaleDateString("en-IN", { day: "2-digit", month: "short" }));
+    }
+  } else {
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      keys.push(d.toLocaleDateString("en-IN", { month: "short", year: "2-digit" }));
+    }
+  }
+  return keys;
+}
+
+export function getTicketKey(date: Date, period: Period): string {
+  if (period === "week") return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+  return date.toLocaleDateString("en-IN", { month: "short", year: "2-digit" });
+}
