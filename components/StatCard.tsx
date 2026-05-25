@@ -3,7 +3,7 @@ import React from "react";
 interface StatCardProps {
   label: string;
   value: string | number;
-  sub?:  string;
+  sub?: string;
   accent?: string;
 }
 

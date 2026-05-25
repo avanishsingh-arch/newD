@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, TooltipProps } from "recharts";
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, ResponsiveContainer, TooltipProps,
+} from "recharts";
 import type { Ticket } from "@/lib/types";
-import { formatMinutes } from "@/lib/workingHours";
+import { formatMinutes, median } from "@/lib/workingHours";
 import { isResolved, filterByPeriod, getPeriodKeys, getTicketKey, CHART_COLORS } from "@/lib/utils";
-import PeriodToggle, { type Period } from "./PeriodT"
+import PeriodToggle, { type Period } from "./PeriodT";
 
 type ViewMode = "single" | "compare";
 
@@ -32,30 +35,38 @@ export default function AgentResolutionChart({ tickets }: { tickets: Ticket[] })
     return Array.from(s).sort();
   }, [tickets]);
 
-  const [mode,          setMode]          = useState<ViewMode>("single");
-  const [period,        setPeriod]        = useState<Period>("week");
+  const [mode, setMode] = useState<ViewMode>("single");
+  const [period, setPeriod] = useState<Period>("week");
   const [selectedAgent, setSelectedAgent] = useState<string>(() => allAgents[0] || "");
   const [checkedAgents, setCheckedAgents] = useState<Set<string>>(() => new Set(allAgents.slice(0, 2)));
 
-  const safeAgent    = allAgents.includes(selectedAgent) ? selectedAgent : (allAgents[0] || "");
+  const safeAgent = allAgents.includes(selectedAgent) ? selectedAgent : (allAgents[0] || "");
   const activeAgents = mode === "single" ? [safeAgent] : Array.from(checkedAgents);
 
   const data = useMemo(() => {
     const filtered = filterByPeriod(tickets, period);
-    const keys     = getPeriodKeys(period);
-    const agents   = activeAgents.filter(Boolean);
-    const map: Record<string, Record<string, { total: number; count: number }>> = {};
-    keys.forEach((k) => { map[k] = {}; agents.forEach((a) => { map[k][a] = { total: 0, count: 0 }; }); });
+    const keys = getPeriodKeys(period);
+    const agents = activeAgents.filter(Boolean);
+
+    // map[key][agent] = { total, count, mins[] }
+    const map: Record<string, Record<string, { total: number; count: number; mins: number[] }>> = {};
+    keys.forEach((k) => {
+      map[k] = {};
+      agents.forEach((a) => { map[k][a] = { total: 0, count: 0, mins: [] }; });
+    });
+
     filtered.forEach((t) => {
       if (!t.createdOn || !isResolved(t) || !agents.includes(t.agent)) return;
       const k = getTicketKey(t.createdOn, period);
       if (!map[k]) return;
       map[k][t.agent].total += t.workingResolutionMin;
       map[k][t.agent].count++;
+      if (t.workingResolutionMin > 0) map[k][t.agent].mins.push(t.workingResolutionMin);
     });
+
     return keys.map((k) => {
       const row: Record<string, string | number> = { date: k };
-      agents.forEach((a) => { const { total, count } = map[k][a]; row[a] = count > 0 ? Math.round(total / count) : 0; });
+      agents.forEach((a) => { row[a] = median(map[k][a].mins); });
       return row;
     });
   }, [tickets, activeAgents, period]);
@@ -104,10 +115,12 @@ export default function AgentResolutionChart({ tickets }: { tickets: Ticket[] })
       {/* Compare checkboxes */}
       {mode === "compare" && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16, padding: "12px 16px", background: "#f7f8fc", border: "1px solid var(--border)", borderRadius: 10 }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", width: "100%", marginBottom: 2 }}>Select agents to compare:</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", width: "100%", marginBottom: 2 }}>
+            Select agents to compare:
+          </span>
           {allAgents.map((agent, i) => {
             const checked = checkedAgents.has(agent);
-            const color   = CHART_COLORS[i % CHART_COLORS.length];
+            const color = CHART_COLORS[i % CHART_COLORS.length];
             return (
               <label key={agent} style={{
                 display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20,
@@ -130,8 +143,11 @@ export default function AgentResolutionChart({ tickets }: { tickets: Ticket[] })
         <LineChart data={data} margin={{ top: 4, right: 24, left: 0, bottom: period !== "week" ? 30 : 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
           <XAxis dataKey="date" tick={{ fontSize: 11, fill: "var(--text-muted)" }} interval={0}
-            angle={period !== "week" ? -30 : 0} textAnchor={period !== "week" ? "end" : "middle"} height={period !== "week" ? 40 : 20} />
-          <YAxis tick={{ fontSize: 11, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} tickFormatter={(v) => formatMinutes(v as number)} />
+            angle={period !== "week" ? -30 : 0}
+            textAnchor={period !== "week" ? "end" : "middle"}
+            height={period !== "week" ? 40 : 20} />
+          <YAxis tick={{ fontSize: 11, fill: "var(--text-muted)" }} axisLine={false} tickLine={false}
+            tickFormatter={(v) => formatMinutes(v as number)} />
           <Tooltip content={<CustomTooltip />} />
           <Legend wrapperStyle={{ fontSize: 12, color: "var(--text-muted)" }} />
           {activeAgents.filter(Boolean).map((agent, i) => (
@@ -142,7 +158,7 @@ export default function AgentResolutionChart({ tickets }: { tickets: Ticket[] })
         </LineChart>
       </ResponsiveContainer>
       <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 8 }}>
-        Y-axis = avg working-hours resolution time. Only resolved tickets counted.
+        Y-axis = median initial response time (seconds → minutes). Only resolved tickets counted.
       </div>
     </div>
   );

@@ -2,9 +2,9 @@
 
 import React, { useMemo, useState } from "react";
 import type { Ticket, AgentStats } from "@/lib/types";
-import { formatMinutes } from "@/lib/workingHours";
+import { formatMinutes, median } from "@/lib/workingHours";
 import { isResolved, filterByPeriod } from "@/lib/utils";
-import PeriodToggle, { type Period } from "./PeriodT"
+import PeriodToggle, { type Period } from "./PeriodT";
 
 type SortKey = "total" | "resolved" | "resRate" | "avgRes";
 
@@ -16,20 +16,33 @@ export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
 
   const agents: AgentStats[] = useMemo(() => {
     const map: Record<string, AgentStats> = {};
+    const mins: Record<string, number[]> = {};
+
     filtered.forEach((t) => {
-      if (!map[t.agent]) map[t.agent] = { agent: t.agent, total: 0, resolved: 0, sumRes: 0, avgRes: null };
+      if (!map[t.agent]) {
+        map[t.agent] = { agent: t.agent, total: 0, resolved: 0, sumRes: 0, avgRes: null };
+        mins[t.agent] = [];
+      }
       map[t.agent].total++;
-      if (isResolved(t)) { map[t.agent].resolved++; map[t.agent].sumRes += t.workingResolutionMin; }
+      if (isResolved(t)) {
+        map[t.agent].resolved++;
+        map[t.agent].sumRes += t.workingResolutionMin;
+        if (t.workingResolutionMin > 0) mins[t.agent].push(t.workingResolutionMin);
+      }
     });
-    return Object.values(map).map((a) => ({ ...a, avgRes: a.resolved > 0 ? Math.round(a.sumRes / a.resolved) : null }));
+
+    return Object.values(map).map((a) => ({
+      ...a,
+      avgRes: mins[a.agent]?.length > 0 ? median(mins[a.agent]) : null,
+    }));
   }, [filtered]);
 
   const sorted = useMemo(() => [...agents].sort((a, b) => {
     switch (sortBy) {
-      case "total":    return b.total - a.total;
+      case "total": return b.total - a.total;
       case "resolved": return b.resolved - a.resolved;
-      case "resRate":  return (b.resolved / b.total) - (a.resolved / a.total);
-      case "avgRes":   return (a.avgRes ?? Infinity) - (b.avgRes ?? Infinity);
+      case "resRate": return (b.resolved / b.total) - (a.resolved / a.total);
+      case "avgRes": return (a.avgRes ?? Infinity) - (b.avgRes ?? Infinity);
       default: return 0;
     }
   }), [agents, sortBy]);
@@ -45,23 +58,29 @@ export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
   });
 
   const badge = (rate: number) => {
-    const bg    = rate >= 0.8 ? "#e6f4ec" : rate >= 0.5 ? "#fef3e2" : "#fde8e8";
+    const bg = rate >= 0.8 ? "#e6f4ec" : rate >= 0.5 ? "#fef3e2" : "#fde8e8";
     const color = rate >= 0.8 ? "#2d9c6b" : rate >= 0.5 ? "#c49a2b" : "#d94f4f";
-    return <span style={{ padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: bg, color }}>{Math.round(rate * 100)}%</span>;
+    return (
+      <span style={{ padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: bg, color }}>
+        {Math.round(rate * 100)}%
+      </span>
+    );
   };
 
   return (
     <div>
-      <div style={{ marginBottom: 16 }}><PeriodToggle value={period} onChange={setPeriod} /></div>
+      <div style={{ marginBottom: 16 }}>
+        <PeriodToggle value={period} onChange={setPeriod} />
+      </div>
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr>
               <th style={{ ...th("total"), cursor: "default" }}>Agent</th>
-              <th style={th("total")}    onClick={() => setSortBy("total")}>Tickets {sortBy === "total" ? "↓" : ""}</th>
+              <th style={th("total")} onClick={() => setSortBy("total")}>Tickets {sortBy === "total" ? "↓" : ""}</th>
               <th style={th("resolved")} onClick={() => setSortBy("resolved")}>Resolved {sortBy === "resolved" ? "↓" : ""}</th>
-              <th style={th("resRate")}  onClick={() => setSortBy("resRate")}>Res. Rate {sortBy === "resRate" ? "↓" : ""}</th>
-              <th style={th("avgRes")}   onClick={() => setSortBy("avgRes")}>Avg Resolution {sortBy === "avgRes" ? "↑" : ""}</th>
+              <th style={th("resRate")} onClick={() => setSortBy("resRate")}>Res. Rate {sortBy === "resRate" ? "↓" : ""}</th>
+              <th style={th("avgRes")} onClick={() => setSortBy("avgRes")}>Median Resolution {sortBy === "avgRes" ? "↑" : ""}</th>
             </tr>
           </thead>
           <tbody>

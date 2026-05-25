@@ -2,18 +2,18 @@ import type { Ticket } from "./types";
 
 export const CHANNEL_COLORS: Record<string, string> = {
   "WhatsApp Business API Gupshup": "#25D366",
-  "WhatsApp":                      "#25D366",
-  "Email":                         "#3266ad",
-  "Live Chat":                     "#9b4dca",
-  "Phone":                         "#e07b39",
-  "Instagram":                     "#C13584",
-  "Twitter":                       "#1DA1F2",
-  "Facebook":                      "#1877F2",
+  "WhatsApp": "#25D366",
+  "Email": "#3266ad",
+  "Live Chat": "#9b4dca",
+  "Phone": "#e07b39",
+  "Instagram": "#C13584",
+  "Twitter": "#1DA1F2",
+  "Facebook": "#1877F2",
 };
 
 export const CHART_COLORS = [
-  "#3266ad","#e07b39","#2d9c6b","#9b4dca",
-  "#d94f4f","#4ab8c1","#c49a2b","#7a7a7a",
+  "#3266ad", "#e07b39", "#2d9c6b", "#9b4dca",
+  "#d94f4f", "#4ab8c1", "#c49a2b", "#7a7a7a",
 ];
 
 export function channelColor(ch: string): string {
@@ -49,7 +49,7 @@ export function filterByPeriod(tickets: Ticket[], period: Period): Ticket[] {
   const now = new Date();
   let cutoff: Date;
   if (period === "week") {
-    cutoff = new Date(now); cutoff.setDate(now.getDate() - 7); cutoff.setHours(0,0,0,0);
+    cutoff = new Date(now); cutoff.setDate(now.getDate() - 7); cutoff.setHours(0, 0, 0, 0);
   } else if (period === "month") {
     cutoff = new Date(now.getFullYear(), now.getMonth() - 11, 1);
   } else {

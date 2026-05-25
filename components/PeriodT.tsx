@@ -5,17 +5,17 @@ import React from "react";
 export type Period = "week" | "month" | "year";
 
 interface Props {
-  value:    Period;
+  value: Period;
   onChange: (p: Period) => void;
 }
 
 const LABELS: Record<Period, string> = {
-  week:  "Last 7 Days",
+  week: "Last 7 Days",
   month: "Monthly",
-  year:  "Yearly",
+  year: "Yearly",
 };
 
-export default function PeriodT({ value, onChange }: Props) {
+export default function PeriodToggle({ value, onChange }: Props) {
   return (
     <div style={{ display: "flex", gap: 4 }}>
       {(["week", "month", "year"] as Period[]).map((p) => (
@@ -23,8 +23,8 @@ export default function PeriodT({ value, onChange }: Props) {
           padding: "5px 13px", borderRadius: 7, fontSize: 12, cursor: "pointer",
           border: "1px solid var(--border)", transition: "all 0.15s",
           background: value === p ? "#3266ad" : "transparent",
-          color:      value === p ? "#fff"    : "var(--text-muted)",
-          fontWeight: value === p ? 600       : 400,
+          color: value === p ? "#fff" : "var(--text-muted)",
+          fontWeight: value === p ? 600 : 400,
         }}>
           {LABELS[p]}
         </button>

@@ -1,5 +1,5 @@
 import type { Ticket } from "./types";
-import { workingMinutesBetween } from "./workingHours";
+// import { workingMinutesBetween } from "./workingHours";
 
 const CHANNELS = [
   "WhatsApp Business API Gupshup",
@@ -27,8 +27,8 @@ const STATUSES = [
   "Pending",
 ];
 
-const TYPES   = ["Inbound", "Outbound"];
-const CLIENTS = ["Richa","Arjun","Sneha","Vikram","Pooja","Mohit","Divya","Sanjay","Kiran","Neha"];
+const TYPES = ["Inbound", "Outbound"];
+const CLIENTS = ["Richa", "Arjun", "Sneha", "Vikram", "Pooja", "Mohit", "Divya", "Sanjay", "Kiran", "Neha"];
 
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -40,27 +40,24 @@ export function generateDemoData(count = 200): Ticket[] {
   return Array.from({ length: count }, (_, i) => {
     const createdOn = new Date(now - Math.random() * 30 * 86_400_000);
     // Resolution between 10 min and 8 working hours
-    const resMin    = Math.floor(Math.random() * 480) + 10;
-    const closedOn  = new Date(createdOn.getTime() + resMin * 60_000);
-    const status    = pick(STATUSES);
+    const resMin = Math.floor(Math.random() * 480) + 10;
+    const closedOn = new Date(createdOn.getTime() + resMin * 60_000);
+    const status = pick(STATUSES);
 
     return {
-      id:                    74000 + i,
-      type:                  pick(TYPES),
+      id: 74000 + i,
+      type: pick(TYPES),
       status,
-      channel:               pick(CHANNELS),
-      client:                pick(CLIENTS),
-      agent:                 pick(AGENTS),
+      channel: pick(CHANNELS),
+      client: pick(CLIENTS),
+      agent: pick(AGENTS),
       createdOn,
-      closedOn:              status.includes("closed") ? closedOn : null,
-      initialResponseTime:   Math.floor(Math.random() * 60) + 1,
-      totalResponseTime:     resMin,
-      avgResponseTime:       Math.floor(resMin * 0.6),
-      maxResponseTime:       Math.floor(resMin * 1.2),
-      workingResolutionMin:  workingMinutesBetween(
-        createdOn,
-        status.includes("closed") ? closedOn : null
-      ),
+      closedOn: status.includes("closed") ? closedOn : null,
+      initialResponseTime: Math.floor(Math.random() * 60) + 1,
+      totalResponseTime: resMin,
+      avgResponseTime: Math.floor(resMin * 0.6),
+      maxResponseTime: Math.floor(resMin * 1.2),
+      workingResolutionMin: Math.floor(Math.random() * 300) + 5,
     } satisfies Ticket;
   });
 }

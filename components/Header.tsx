@@ -3,9 +3,9 @@
 import React from "react";
 
 interface Props {
-  onRefresh:   () => void;
+  onRefresh: () => void;
   lastRefresh: Date | null;
-  usingDemo:   boolean;
+  usingDemo: boolean;
 }
 
 export default function Header({ onRefresh, lastRefresh, usingDemo }: Props) {
@@ -20,7 +20,7 @@ export default function Header({ onRefresh, lastRefresh, usingDemo }: Props) {
           CS Ticket Resolution
         </div>
         <div style={{ color: "#8b93b0", fontSize: 11, marginTop: 3 }}>
-          Working hours: 10:00 AM – 10:00 PM &nbsp;·&nbsp;
+          Response time based on Initial Response Time column &nbsp;·&nbsp;
           {usingDemo
             ? <span style={{ color: "#e07b39" }}>Demo mode — configure SHEET_ID &amp; GOOGLE_CREDENTIALS_JSON</span>
             : lastRefresh && <span>Updated {lastRefresh.toLocaleTimeString()}</span>
