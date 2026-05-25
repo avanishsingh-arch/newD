@@ -6,7 +6,7 @@ import {
   Tooltip, Legend, ResponsiveContainer, TooltipProps,
 } from "recharts";
 import type { Ticket } from "@/lib/types";
-import { formatMinutes, median } from "@/lib/workingHours";
+import { formatMinutes, average } from "@/lib/workingHours";
 import { isResolved, filterByPeriod, getPeriodKeys, getTicketKey } from "@/lib/utils";
 import PeriodToggle, { type Period } from "./PeriodT";
 
@@ -29,7 +29,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>)
           <span style={{ color: p.color as string }}>●</span>
           <span>{p.name}:</span>
           <b style={{ color: "var(--text-primary)" }}>
-            {p.name === "Median Resolution" ? formatMinutes(p.value as number) : p.value}
+            {p.name === "Average Resolution" ? formatMinutes(p.value as number) : p.value}
           </b>
         </div>
       ))}
@@ -58,7 +58,7 @@ export default function TrendChart({ tickets }: { tickets: Ticket[] }) {
       }
     });
 
-    return Object.values(map).map((d) => ({ ...d, medianRes: median(d.mins) }));
+    return Object.values(map).map((d) => ({ ...d, medianRes: average(d.mins) }));
   }, [tickets, period]);
 
   return (
@@ -80,7 +80,7 @@ export default function TrendChart({ tickets }: { tickets: Ticket[] }) {
           <Legend wrapperStyle={{ fontSize: 12, color: "var(--text-muted)" }} />
           <Line yAxisId="left" type="monotone" dataKey="tickets" name="Created" stroke="#3266ad" strokeWidth={2} dot={period === "week"} activeDot={{ r: 4 }} />
           <Line yAxisId="left" type="monotone" dataKey="resolved" name="Resolved" stroke="#2d9c6b" strokeWidth={2} dot={period === "week"} activeDot={{ r: 4 }} />
-          <Line yAxisId="right" type="monotone" dataKey="medianRes" name="Median Resolution" stroke="#e07b39" strokeWidth={2} strokeDasharray="5 3" dot={false} activeDot={{ r: 4 }} />
+          <Line yAxisId="right" type="monotone" dataKey="medianRes" name="Avearge Resolution" stroke="#e07b39" strokeWidth={2} strokeDasharray="5 3" dot={false} activeDot={{ r: 4 }} />
         </LineChart>
       </ResponsiveContainer>
     </div>

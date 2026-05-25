@@ -6,7 +6,7 @@ import {
   Tooltip, Legend, ResponsiveContainer, TooltipProps,
 } from "recharts";
 import type { Ticket } from "@/lib/types";
-import { formatMinutes, median } from "@/lib/workingHours";
+import { formatMinutes, average } from "@/lib/workingHours";
 import { isResolved, filterByPeriod, getPeriodKeys, getTicketKey, CHART_COLORS } from "@/lib/utils";
 import PeriodToggle, { type Period } from "./PeriodT";
 
@@ -66,7 +66,7 @@ export default function AgentResolutionChart({ tickets }: { tickets: Ticket[] })
 
     return keys.map((k) => {
       const row: Record<string, string | number> = { date: k };
-      agents.forEach((a) => { row[a] = median(map[k][a].mins); });
+      agents.forEach((a) => { row[a] = average(map[k][a].mins); });
       return row;
     });
   }, [tickets, activeAgents, period]);
@@ -158,7 +158,7 @@ export default function AgentResolutionChart({ tickets }: { tickets: Ticket[] })
         </LineChart>
       </ResponsiveContainer>
       <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 8 }}>
-        Y-axis = median initial response time (seconds → minutes). Only resolved tickets counted.
+        Y-axis = average initial response time (seconds → minutes). Only resolved tickets counted.
       </div>
     </div>
   );

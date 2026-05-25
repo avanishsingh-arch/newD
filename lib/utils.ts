@@ -3,6 +3,8 @@ import type { Ticket } from "./types";
 export const CHANNEL_COLORS: Record<string, string> = {
   "WhatsApp Business API Gupshup": "#25D366",
   "WhatsApp": "#25D366",
+  "WAZZUP: WhatsApp": "#bd4aa3ff",
+  "Wati": "#075E54",
   "Email": "#3266ad",
   "Live Chat": "#9b4dca",
   "Phone": "#e07b39",

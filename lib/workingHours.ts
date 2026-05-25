@@ -49,3 +49,10 @@ export function median(values: number[]): number {
     ? sorted[mid]
     : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
 }
+/**
+ * Compute the average of an array of numbers.
+ */
+export function average(values: number[]): number {
+  if (values.length === 0) return 0;
+  return Math.round(values.reduce((sum, v) => sum + v, 0) / values.length);
+}
