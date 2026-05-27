@@ -80,7 +80,7 @@ export default function TrendChart({ tickets }: { tickets: Ticket[] }) {
           <Legend wrapperStyle={{ fontSize: 12, color: "var(--text-muted)" }} />
           <Line yAxisId="left" type="monotone" dataKey="tickets" name="Created" stroke="#3266ad" strokeWidth={2} dot={period === "week"} activeDot={{ r: 4 }} />
           <Line yAxisId="left" type="monotone" dataKey="resolved" name="Resolved" stroke="#2d9c6b" strokeWidth={2} dot={period === "week"} activeDot={{ r: 4 }} />
-          <Line yAxisId="right" type="monotone" dataKey="medianRes" name="Avearge Resolution" stroke="#e07b39" strokeWidth={2} strokeDasharray="5 3" dot={false} activeDot={{ r: 4 }} />
+          <Line yAxisId="right" type="monotone" dataKey="medianRes" name="Median Resolution" stroke="#e07b39" strokeWidth={2} strokeDasharray="5 3" dot={false} activeDot={{ r: 4 }} />
         </LineChart>
       </ResponsiveContainer>
     </div>
