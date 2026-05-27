@@ -6,7 +6,7 @@ import {
   Tooltip, Legend, ResponsiveContainer, TooltipProps,
 } from "recharts";
 import type { Ticket } from "@/lib/types";
-import { formatMinutes, average } from "@/lib/workingHours";
+import { formatMinutes, median } from "@/lib/workingHours";
 import { isResolved, filterByPeriod, getPeriodKeys, getTicketKey } from "@/lib/utils";
 import PeriodToggle, { type Period } from "./PeriodT";
 
@@ -29,7 +29,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>)
           <span style={{ color: p.color as string }}>●</span>
           <span>{p.name}:</span>
           <b style={{ color: "var(--text-primary)" }}>
-            {p.name === "Average Resolution" ? formatMinutes(p.value as number) : p.value}
+            {p.name === "Median Resolution" ? formatMinutes(p.value as number) : p.value}
           </b>
         </div>
       ))}
@@ -58,7 +58,7 @@ export default function TrendChart({ tickets }: { tickets: Ticket[] }) {
       }
     });
 
-    return Object.values(map).map((d) => ({ ...d, medianRes: average(d.mins) }));
+    return Object.values(map).map((d) => ({ ...d, medianRes: median(d.mins) }));
   }, [tickets, period]);
 
   return (

@@ -7,7 +7,7 @@ import {
 } from "recharts";
 import type { Ticket, ChannelStats } from "@/lib/types";
 import { channelColor, shortChannelName, filterByPeriod } from "@/lib/utils";
-import { formatMinutes, average } from "@/lib/workingHours";
+import { formatMinutes, median } from "@/lib/workingHours";
 import PeriodToggle, { type Period } from "./PeriodT";
 
 const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
@@ -19,7 +19,7 @@ const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
         <div key={p.name} style={{ color: "var(--text-muted)", display: "flex", gap: 8 }}>
           <span>{p.name}:</span>
           <b style={{ color: "var(--text-primary)" }}>
-            {p.name === "Average Resolution" ? formatMinutes(p.value as number) : p.value}
+            {p.name === "Median Resolution" ? formatMinutes(p.value as number) : p.value}
           </b>
         </div>
       ))}
@@ -47,7 +47,7 @@ export default function ChannelChart({ tickets }: { tickets: Ticket[] }) {
     });
 
     return Object.values(map)
-      .map((d) => ({ ...d, avgResMin: average(mins[d.channel] ?? []) }))
+      .map((d) => ({ ...d, avgResMin: median(mins[d.channel] ?? []) }))
       .sort((a, b) => b.tickets - a.tickets);
   }, [filtered]);
 
@@ -75,7 +75,7 @@ export default function ChannelChart({ tickets }: { tickets: Ticket[] }) {
           <Bar yAxisId="left" dataKey="tickets" name="Tickets" radius={[4, 4, 0, 0]}>
             {data.map((d, i) => <Cell key={i} fill={channelColor(d.channel)} />)}
           </Bar>
-          <Bar yAxisId="right" dataKey="avgResMin" name="Average Resolution" radius={[4, 4, 0, 0]} opacity={0.5}>
+          <Bar yAxisId="right" dataKey="avgResMin" name="Median Resolution" radius={[4, 4, 0, 0]} opacity={0.5}>
             {data.map((d, i) => <Cell key={i} fill={channelColor(d.channel)} />)}
           </Bar>
         </BarChart>

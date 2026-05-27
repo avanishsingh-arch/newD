@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import type { Ticket, AgentStats } from "@/lib/types";
-import { formatMinutes, average } from "@/lib/workingHours";
+import { formatMinutes, median } from "@/lib/workingHours";
 import { isResolved, filterByPeriod } from "@/lib/utils";
 import PeriodToggle, { type Period } from "./PeriodT";
 
@@ -33,7 +33,7 @@ export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
 
     return Object.values(map).map((a) => ({
       ...a,
-      avgRes: mins[a.agent]?.length > 0 ? average(mins[a.agent]) : null,
+      avgRes: mins[a.agent]?.length > 0 ? median(mins[a.agent]) : null,
     }));
   }, [filtered]);
 
@@ -80,7 +80,7 @@ export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
               <th style={th("total")} onClick={() => setSortBy("total")}>Tickets {sortBy === "total" ? "↓" : ""}</th>
               <th style={th("resolved")} onClick={() => setSortBy("resolved")}>Resolved {sortBy === "resolved" ? "↓" : ""}</th>
               <th style={th("resRate")} onClick={() => setSortBy("resRate")}>Res. Rate {sortBy === "resRate" ? "↓" : ""}</th>
-              <th style={th("avgRes")} onClick={() => setSortBy("avgRes")}>Average Resolution {sortBy === "avgRes" ? "↑" : ""}</th>
+              <th style={th("avgRes")} onClick={() => setSortBy("avgRes")}>Median Resolution {sortBy === "avgRes" ? "↑" : ""}</th>
             </tr>
           </thead>
           <tbody>
