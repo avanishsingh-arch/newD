@@ -17,7 +17,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-  const [usingDemo, setUsingDemo] = useState(false);
+
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -25,7 +25,7 @@ export default function DashboardPage() {
     try {
       const data = await fetchTickets();
       setAllTickets(data);
-      setUsingDemo(false);
+
       setLastRefresh(new Date());
     } catch (e) {
       setError((e as Error).message);
@@ -47,7 +47,7 @@ export default function DashboardPage() {
       "--border": "#e5e7ef", "--text-primary": "#1a1d2e", "--text-muted": "#6b7080",
     } as React.CSSProperties}>
 
-      <Header onRefresh={load} lastRefresh={lastRefresh} usingDemo={usingDemo} />
+      <Header onRefresh={load} lastRefresh={lastRefresh} />
 
       <main style={{ padding: "28px 32px", maxWidth: 1400, margin: "0 auto" }}>
 
