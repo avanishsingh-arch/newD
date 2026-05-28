@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import type { Ticket, AgentStats, MetricType } from "@/lib/types";
 import { formatMinutes, median } from "@/lib/workingHours";
 import { isResolved, filterByPeriod, filterByDateRange } from "@/lib/utils";
@@ -14,10 +14,14 @@ export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
   const [period, setPeriod] = useState<Period>("week");
   const [sortBy, setSortBy] = useState<SortKey>("total");
   const [metric, setMetric] = useState<MetricType>("initial");
-  const [range, setRange] = useState<DateRange>({
-    from: new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10),
-    to: new Date().toISOString().slice(0, 10),
-  });
+  const [range,  setRange]  = useState<DateRange>({ from: "", to: "" });
+
+  useEffect(() => {
+    setRange({
+      from: new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10),
+      to:   new Date().toISOString().slice(0, 10),
+    });
+  }, []);
 
   const filtered = useMemo(
     () => filterByDateRange(filterByPeriod(tickets, period), range),
@@ -26,11 +30,11 @@ export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
 
   const agents: AgentStats[] = useMemo(() => {
     const map: Record<string, AgentStats> = {};
-    const mins: Record<string, number[]> = {};
+    const mins: Record<string, number[]>  = {};
 
     filtered.forEach((t) => {
       if (!map[t.agent]) {
-        map[t.agent] = { agent: t.agent, total: 0, resolved: 0, sumRes: 0, avgRes: null };
+        map[t.agent]  = { agent: t.agent, total: 0, resolved: 0, sumRes: 0, avgRes: null };
         mins[t.agent] = [];
       }
       map[t.agent].total++;
@@ -50,10 +54,10 @@ export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
 
   const sorted = useMemo(() => [...agents].sort((a, b) => {
     switch (sortBy) {
-      case "total": return b.total - a.total;
+      case "total":    return b.total - a.total;
       case "resolved": return b.resolved - a.resolved;
-      case "resRate": return (b.resolved / b.total) - (a.resolved / a.total);
-      case "avgRes": return (a.avgRes ?? Infinity) - (b.avgRes ?? Infinity);
+      case "resRate":  return (b.resolved / b.total) - (a.resolved / a.total);
+      case "avgRes":   return (a.avgRes ?? Infinity) - (b.avgRes ?? Infinity);
       default: return 0;
     }
   }), [agents, sortBy]);
@@ -64,12 +68,12 @@ export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
     padding: "8px 14px", textAlign: "left", fontWeight: 600, fontSize: 11,
     textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap",
     cursor: "pointer", userSelect: "none", borderBottom: "1px solid var(--border)",
-    color: sortBy === key ? "var(--text-primary)" : "var(--text-muted)",
+    color:      sortBy === key ? "var(--text-primary)" : "var(--text-muted)",
     background: sortBy === key ? "#f0f4ff" : "transparent",
   });
 
   const badge = (rate: number) => {
-    const bg = rate >= 0.8 ? "#e6f4ec" : rate >= 0.5 ? "#fef3e2" : "#fde8e8";
+    const bg    = rate >= 0.8 ? "#e6f4ec" : rate >= 0.5 ? "#fef3e2" : "#fde8e8";
     const color = rate >= 0.8 ? "#2d9c6b" : rate >= 0.5 ? "#c49a2b" : "#d94f4f";
     return (
       <span style={{ padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: bg, color }}>
@@ -80,7 +84,6 @@ export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
 
   return (
     <div>
-      {/* Controls */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10, alignItems: "center" }}>
         <PeriodToggle value={period} onChange={setPeriod} />
         <MetricToggle value={metric} onChange={setMetric} />
@@ -94,10 +97,10 @@ export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
           <thead>
             <tr>
               <th style={{ ...th("total"), cursor: "default" }}>Agent</th>
-              <th style={th("total")} onClick={() => setSortBy("total")}>Tickets {sortBy === "total" ? "↓" : ""}</th>
+              <th style={th("total")}    onClick={() => setSortBy("total")}>Tickets {sortBy === "total" ? "↓" : ""}</th>
               <th style={th("resolved")} onClick={() => setSortBy("resolved")}>Resolved {sortBy === "resolved" ? "↓" : ""}</th>
-              <th style={th("resRate")} onClick={() => setSortBy("resRate")}>Res. Rate {sortBy === "resRate" ? "↓" : ""}</th>
-              <th style={th("avgRes")} onClick={() => setSortBy("avgRes")}>
+              <th style={th("resRate")}  onClick={() => setSortBy("resRate")}>Res. Rate {sortBy === "resRate" ? "↓" : ""}</th>
+              <th style={th("avgRes")}   onClick={() => setSortBy("avgRes")}>
                 Median {metric === "initial" ? "Initial" : "Total"} Response {sortBy === "avgRes" ? "↑" : ""}
               </th>
             </tr>
