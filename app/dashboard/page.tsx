@@ -3,21 +3,21 @@
 import React, { useState, useEffect, useCallback } from "react";
 import type { Ticket } from "@/lib/types";
 import { fetchTickets } from "@/lib/sheetsApi";
-import { generateDemoData } from "@/lib/demoData";
 
-import Header               from "@/components/Header";
-import SectionTitle         from "@/components/SectionTitle";
-import ChannelChart         from "@/components/ChannelChart";
-import TrendChart           from "@/components/TrendChart";
-import AgentTable           from "@/components/AgentTable";
+
+import Header from "@/components/Header";
+import SectionTitle from "@/components/SectionTitle";
+import ChannelChart from "@/components/ChannelChart";
+import TrendChart from "@/components/TrendChart";
+import AgentTable from "@/components/AgentTable";
 import AgentResolutionChart from "@/components/AgentResolutionChart";
 
 export default function DashboardPage() {
-  const [allTickets,  setAllTickets]  = useState<Ticket[]>([]);
-  const [loading,     setLoading]     = useState(true);
-  const [error,       setError]       = useState<string | null>(null);
+  const [allTickets, setAllTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-  const [usingDemo,   setUsingDemo]   = useState(false);
+  const [usingDemo, setUsingDemo] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -28,14 +28,7 @@ export default function DashboardPage() {
       setUsingDemo(false);
       setLastRefresh(new Date());
     } catch (e) {
-      const msg = (e as Error).message;
-      if (msg.includes("not set") || msg.includes("SHEET_ID") || msg.includes("CREDENTIALS")) {
-        setAllTickets(generateDemoData(220));
-        setUsingDemo(true);
-        setLastRefresh(new Date());
-      } else {
-        setError(msg);
-      }
+      setError((e as Error).message);
     } finally {
       setLoading(false);
     }

@@ -5,10 +5,9 @@ import React from "react";
 interface Props {
   onRefresh: () => void;
   lastRefresh: Date | null;
-  usingDemo: boolean;
 }
 
-export default function Header({ onRefresh, lastRefresh, usingDemo }: Props) {
+export default function Header({ onRefresh, lastRefresh }: Props) {
   return (
     <header style={{
       background: "#1a1d2e", padding: "18px 32px",
@@ -21,10 +20,7 @@ export default function Header({ onRefresh, lastRefresh, usingDemo }: Props) {
         </div>
         <div style={{ color: "#8b93b0", fontSize: 11, marginTop: 3 }}>
           Response time based on Initial Response Time column &nbsp;·&nbsp;
-          {usingDemo
-            ? <span style={{ color: "#e07b39" }}>Demo mode — configure SHEET_ID &amp; GOOGLE_CREDENTIALS_JSON</span>
-            : lastRefresh && <span>Updated {lastRefresh.toLocaleTimeString()}</span>
-          }
+          {lastRefresh && <span>Updated {lastRefresh.toLocaleTimeString()}</span>}
         </div>
       </div>
       <button onClick={onRefresh} style={{

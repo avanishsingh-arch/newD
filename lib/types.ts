@@ -12,6 +12,7 @@ export interface Ticket {
   avgResponseTime: number;
   maxResponseTime: number;
   workingResolutionMin: number;
+  totalResponseMin:      number;
 }
 
 export interface AgentStats {
@@ -37,3 +38,4 @@ export interface DailyStats {
   total: number;
   avgRes: number;
 }
+export type MetricType = "initial" | "total";

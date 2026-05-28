@@ -1,18 +1,28 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import type { Ticket, AgentStats } from "@/lib/types";
+import type { Ticket, AgentStats, MetricType } from "@/lib/types";
 import { formatMinutes, median } from "@/lib/workingHours";
-import { isResolved, filterByPeriod } from "@/lib/utils";
+import { isResolved, filterByPeriod, filterByDateRange } from "@/lib/utils";
 import PeriodToggle, { type Period } from "./PeriodT";
+import MetricToggle from "./MetricToggle";
+import DateRangePicker, { type DateRange } from "./DateRangePicker";
 
 type SortKey = "total" | "resolved" | "resRate" | "avgRes";
 
 export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
   const [period, setPeriod] = useState<Period>("week");
   const [sortBy, setSortBy] = useState<SortKey>("total");
+  const [metric, setMetric] = useState<MetricType>("initial");
+  const [range, setRange] = useState<DateRange>({
+    from: new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10),
+    to: new Date().toISOString().slice(0, 10),
+  });
 
-  const filtered = useMemo(() => filterByPeriod(tickets, period), [tickets, period]);
+  const filtered = useMemo(
+    () => filterByDateRange(filterByPeriod(tickets, period), range),
+    [tickets, period, range]
+  );
 
   const agents: AgentStats[] = useMemo(() => {
     const map: Record<string, AgentStats> = {};
@@ -25,9 +35,10 @@ export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
       }
       map[t.agent].total++;
       if (isResolved(t)) {
+        const val = metric === "initial" ? t.workingResolutionMin : t.totalResponseMin;
         map[t.agent].resolved++;
-        map[t.agent].sumRes += t.workingResolutionMin;
-        if (t.workingResolutionMin > 0) mins[t.agent].push(t.workingResolutionMin);
+        map[t.agent].sumRes += val;
+        if (val > 0) mins[t.agent].push(val);
       }
     });
 
@@ -35,7 +46,7 @@ export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
       ...a,
       avgRes: mins[a.agent]?.length > 0 ? median(mins[a.agent]) : null,
     }));
-  }, [filtered]);
+  }, [filtered, metric]);
 
   const sorted = useMemo(() => [...agents].sort((a, b) => {
     switch (sortBy) {
@@ -69,9 +80,15 @@ export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
 
   return (
     <div>
-      <div style={{ marginBottom: 16 }}>
+      {/* Controls */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10, alignItems: "center" }}>
         <PeriodToggle value={period} onChange={setPeriod} />
+        <MetricToggle value={metric} onChange={setMetric} />
       </div>
+      <div style={{ marginBottom: 16 }}>
+        <DateRangePicker value={range} onChange={setRange} />
+      </div>
+
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
@@ -80,7 +97,9 @@ export default function AgentTable({ tickets }: { tickets: Ticket[] }) {
               <th style={th("total")} onClick={() => setSortBy("total")}>Tickets {sortBy === "total" ? "↓" : ""}</th>
               <th style={th("resolved")} onClick={() => setSortBy("resolved")}>Resolved {sortBy === "resolved" ? "↓" : ""}</th>
               <th style={th("resRate")} onClick={() => setSortBy("resRate")}>Res. Rate {sortBy === "resRate" ? "↓" : ""}</th>
-              <th style={th("avgRes")} onClick={() => setSortBy("avgRes")}>Median Resolution {sortBy === "avgRes" ? "↑" : ""}</th>
+              <th style={th("avgRes")} onClick={() => setSortBy("avgRes")}>
+                Median {metric === "initial" ? "Initial" : "Total"} Response {sortBy === "avgRes" ? "↑" : ""}
+              </th>
             </tr>
           </thead>
           <tbody>

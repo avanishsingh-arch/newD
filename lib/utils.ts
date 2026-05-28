@@ -1,4 +1,5 @@
 import type { Ticket } from "./types";
+import type { DateRange } from "@/components/DateRangePicker";
 
 export const CHANNEL_COLORS: Record<string, string> = {
   "WhatsApp Business API Gupshup": "#25D366",
@@ -80,4 +81,11 @@ export function getPeriodKeys(period: Period): string[] {
 export function getTicketKey(date: Date, period: Period): string {
   if (period === "week") return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
   return date.toLocaleDateString("en-IN", { month: "short", year: "2-digit" });
+}
+export function filterByDateRange(tickets: Ticket[], range: DateRange): Ticket[] {
+  const from = new Date(range.from);
+  from.setHours(0, 0, 0, 0);
+  const to = new Date(range.to);
+  to.setHours(23, 59, 59, 999);
+  return tickets.filter((t) => t.createdOn && t.createdOn >= from && t.createdOn <= to);
 }

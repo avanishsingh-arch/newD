@@ -9,6 +9,10 @@ import type { Ticket } from "@/lib/types";
 import { formatMinutes, median } from "@/lib/workingHours";
 import { isResolved, filterByPeriod, getPeriodKeys, getTicketKey } from "@/lib/utils";
 import PeriodToggle, { type Period } from "./PeriodT";
+import MetricToggle from "./MetricToggle";
+import DateRangePicker, { type DateRange } from "./DateRangePicker";
+import type { MetricType } from "@/lib/types";
+import { filterByDateRange } from "@/lib/utils";
 
 interface DayData {
   date: string;
@@ -39,9 +43,14 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>)
 
 export default function TrendChart({ tickets }: { tickets: Ticket[] }) {
   const [period, setPeriod] = useState<Period>("week");
+  const [metric, setMetric] = useState<MetricType>("initial");
+  const [range, setRange] = useState<DateRange>({
+    from: new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10),
+    to: new Date().toISOString().slice(0, 10),
+  });
 
   const data = useMemo(() => {
-    const filtered = filterByPeriod(tickets, period);
+    const filtered = filterByDateRange(filterByPeriod(tickets, period), range);
     const keys = getPeriodKeys(period);
     const map: Record<string, DayData> = {};
     keys.forEach((k) => { map[k] = { date: k, tickets: 0, resolved: 0, total: 0, mins: [], medianRes: 0 }; });
@@ -52,9 +61,10 @@ export default function TrendChart({ tickets }: { tickets: Ticket[] }) {
       if (!map[k]) return;
       map[k].tickets++;
       if (isResolved(t)) {
+        const val = metric === "initial" ? t.workingResolutionMin : t.totalResponseMin;
         map[k].resolved++;
-        map[k].total += t.workingResolutionMin;
-        if (t.workingResolutionMin > 0) map[k].mins.push(t.workingResolutionMin);
+        map[k].total += val;
+        if (val > 0) map[k].mins.push(val);
       }
     });
 
@@ -65,6 +75,11 @@ export default function TrendChart({ tickets }: { tickets: Ticket[] }) {
     <div>
       <div style={{ marginBottom: 16 }}>
         <PeriodToggle value={period} onChange={setPeriod} />
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+        <PeriodToggle value={period} onChange={setPeriod} />
+        <MetricToggle value={metric} onChange={setMetric} />
+        <DateRangePicker value={range} onChange={setRange} />
       </div>
       <ResponsiveContainer width="100%" height={270}>
         <LineChart data={data} margin={{ top: 4, right: 24, left: 0, bottom: period !== "week" ? 30 : 0 }}>

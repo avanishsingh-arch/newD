@@ -17,26 +17,27 @@ import { parseSheetDate } from "./workingHours";
  * 11 → Maximum response time (seconds)
  */
 function parseRow(r: string[]): Ticket {
-  const createdOn = parseSheetDate(r[6]);
-  const closedOn = parseSheetDate(r[7]);
+  const createdOn  = parseSheetDate(r[6]);
+  const closedOn   = parseSheetDate(r[8]);
 
-  const initialResponseSec = parseInt(r[8]) || 0;
-  const resolutionMin = Math.round(initialResponseSec / 60);
+  const initialSec = parseInt(r[9])  || 0;
+  const totalSec   = parseInt(r[10]) || 0;
 
   return {
-    id: r[0] || "—",
-    type: r[1] || "—",
-    status: r[2] || "—",
-    channel: r[3] || "Unknown",
-    client: r[4] || "—",
-    agent: r[5] || "Unknown",
+    id:                   r[0] || "—",
+    type:                 r[1] || "—",
+    status:               r[2] || "—",
+    channel:              r[3] || "Unknown",
+    client:               r[4] || "—",
+    agent:                r[5] || "Unknown",
     createdOn,
     closedOn,
-    initialResponseTime: initialResponseSec,
-    totalResponseTime: parseInt(r[9]) || 0,
-    avgResponseTime: parseInt(r[10]) || 0,
-    maxResponseTime: parseInt(r[11]) || 0,
-    workingResolutionMin: resolutionMin,
+    initialResponseTime:  initialSec,
+    totalResponseTime:    totalSec,
+    avgResponseTime:      0,
+    maxResponseTime:      0,
+    workingResolutionMin: Math.round(initialSec / 60),
+    totalResponseMin:     Math.round(totalSec   / 60),
   };
 }
 

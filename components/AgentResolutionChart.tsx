@@ -5,10 +5,12 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, TooltipProps,
 } from "recharts";
-import type { Ticket } from "@/lib/types";
+import type { Ticket, MetricType } from "@/lib/types";
 import { formatMinutes, median } from "@/lib/workingHours";
-import { isResolved, filterByPeriod, getPeriodKeys, getTicketKey, CHART_COLORS } from "@/lib/utils";
+import { isResolved, filterByPeriod, filterByDateRange, getPeriodKeys, getTicketKey, CHART_COLORS } from "@/lib/utils";
 import PeriodToggle, { type Period } from "./PeriodT";
+import MetricToggle from "./MetricToggle";
+import DateRangePicker, { type DateRange } from "./DateRangePicker";
 
 type ViewMode = "single" | "compare";
 
@@ -39,16 +41,20 @@ export default function AgentResolutionChart({ tickets }: { tickets: Ticket[] })
   const [period, setPeriod] = useState<Period>("week");
   const [selectedAgent, setSelectedAgent] = useState<string>(() => allAgents[0] || "");
   const [checkedAgents, setCheckedAgents] = useState<Set<string>>(() => new Set(allAgents.slice(0, 2)));
+  const [metric, setMetric] = useState<MetricType>("initial");
+  const [range, setRange] = useState<DateRange>({
+    from: new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10),
+    to: new Date().toISOString().slice(0, 10),
+  });
 
   const safeAgent = allAgents.includes(selectedAgent) ? selectedAgent : (allAgents[0] || "");
   const activeAgents = mode === "single" ? [safeAgent] : Array.from(checkedAgents);
 
   const data = useMemo(() => {
-    const filtered = filterByPeriod(tickets, period);
+    const filtered = filterByDateRange(filterByPeriod(tickets, period), range);
     const keys = getPeriodKeys(period);
     const agents = activeAgents.filter(Boolean);
 
-    // map[key][agent] = { total, count, mins[] }
     const map: Record<string, Record<string, { total: number; count: number; mins: number[] }>> = {};
     keys.forEach((k) => {
       map[k] = {};
@@ -59,9 +65,10 @@ export default function AgentResolutionChart({ tickets }: { tickets: Ticket[] })
       if (!t.createdOn || !isResolved(t) || !agents.includes(t.agent)) return;
       const k = getTicketKey(t.createdOn, period);
       if (!map[k]) return;
-      map[k][t.agent].total += t.workingResolutionMin;
+      const val = metric === "initial" ? t.workingResolutionMin : t.totalResponseMin;
+      map[k][t.agent].total += val;
       map[k][t.agent].count++;
-      if (t.workingResolutionMin > 0) map[k][t.agent].mins.push(t.workingResolutionMin);
+      if (val > 0) map[k][t.agent].mins.push(val);
     });
 
     return keys.map((k) => {
@@ -69,7 +76,7 @@ export default function AgentResolutionChart({ tickets }: { tickets: Ticket[] })
       agents.forEach((a) => { row[a] = median(map[k][a].mins); });
       return row;
     });
-  }, [tickets, activeAgents, period]);
+  }, [tickets, activeAgents, period, metric, range]);
 
   const toggleAgent = (agent: string) => {
     setCheckedAgents((prev) => {
@@ -92,13 +99,14 @@ export default function AgentResolutionChart({ tickets }: { tickets: Ticket[] })
 
   return (
     <div>
-      {/* Controls */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 16, alignItems: "center" }}>
+      {/* Controls row 1 */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 10, alignItems: "center" }}>
         <div style={{ display: "flex", gap: 2, background: "#f0f2f8", padding: "3px 4px", borderRadius: 9 }}>
           {modeBtn("single", "Single Agent")}
           {modeBtn("compare", "Compare Agents")}
         </div>
         <PeriodToggle value={period} onChange={setPeriod} />
+        <MetricToggle value={metric} onChange={setMetric} />
         {mode === "single" && (
           <select value={safeAgent} onChange={(e) => setSelectedAgent(e.target.value)} style={{
             padding: "5px 32px 5px 12px", borderRadius: 8, border: "1px solid var(--border)",
@@ -110,6 +118,11 @@ export default function AgentResolutionChart({ tickets }: { tickets: Ticket[] })
             {allAgents.map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
         )}
+      </div>
+
+      {/* Controls row 2 — date range */}
+      <div style={{ marginBottom: 16 }}>
+        <DateRangePicker value={range} onChange={setRange} />
       </div>
 
       {/* Compare checkboxes */}
@@ -158,7 +171,7 @@ export default function AgentResolutionChart({ tickets }: { tickets: Ticket[] })
         </LineChart>
       </ResponsiveContainer>
       <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 8 }}>
-        Y-axis = median initial response time (seconds → minutes). Only resolved tickets counted.
+        Y-axis = median {metric === "initial" ? "initial" : "total"} response time (seconds → minutes). Only resolved tickets counted.
       </div>
     </div>
   );

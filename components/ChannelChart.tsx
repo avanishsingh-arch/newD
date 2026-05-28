@@ -9,6 +9,10 @@ import type { Ticket, ChannelStats } from "@/lib/types";
 import { channelColor, shortChannelName, filterByPeriod } from "@/lib/utils";
 import { formatMinutes, median } from "@/lib/workingHours";
 import PeriodToggle, { type Period } from "./PeriodT";
+import MetricToggle from "./MetricToggle";
+import DateRangePicker, { type DateRange } from "./DateRangePicker";
+import type { MetricType } from "@/lib/types";
+import { filterByDateRange } from "@/lib/utils";
 
 const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   if (!active || !payload?.length) return null;
@@ -29,8 +33,14 @@ const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
 
 export default function ChannelChart({ tickets }: { tickets: Ticket[] }) {
   const [period, setPeriod] = useState<Period>("week");
+  const [metric, setMetric] = useState<MetricType>("initial");
+  const [range, setRange] = useState<DateRange>({
+    from: new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10),
+    to: new Date().toISOString().slice(0, 10),
+  });
 
-  const filtered = useMemo(() => filterByPeriod(tickets, period), [tickets, period]);
+  const filtered = useMemo(() => filterByDateRange(filterByPeriod(tickets, period), range), [tickets, period, range]);
+
 
   const data: ChannelStats[] = useMemo(() => {
     const map: Record<string, ChannelStats> = {};
@@ -42,8 +52,9 @@ export default function ChannelChart({ tickets }: { tickets: Ticket[] }) {
         mins[t.channel] = [];
       }
       map[t.channel].tickets++;
-      map[t.channel].total += t.workingResolutionMin;
-      if (t.workingResolutionMin > 0) mins[t.channel].push(t.workingResolutionMin);
+      const val = metric === "initial" ? t.workingResolutionMin : t.totalResponseMin;
+      map[t.channel].total += val;
+      if (val > 0) mins[t.channel].push(val);
     });
 
     return Object.values(map)
@@ -53,8 +64,10 @@ export default function ChannelChart({ tickets }: { tickets: Ticket[] }) {
 
   return (
     <div>
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
         <PeriodToggle value={period} onChange={setPeriod} />
+        <MetricToggle value={metric} onChange={setMetric} />
+        <DateRangePicker value={range} onChange={setRange} />
       </div>
       <ResponsiveContainer width="100%" height={360}>
         <BarChart data={data} margin={{ top: 4, right: 24, left: 0, bottom: 20 }}>
