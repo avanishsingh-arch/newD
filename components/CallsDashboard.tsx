@@ -82,7 +82,6 @@ function AgentCallTable({ data }: { data: ReturnType<typeof aggregateByAgent> })
                   </div>
                 </td>
                 <td style={{ padding: "11px 14px", color: "#3266ad", fontWeight: 600 }}>{a.incoming}</td>
-                <td style={{ padding: "11px 14px", color: "#9b4dca", fontWeight: 600 }}>{a.outgoing}</td>
                 <td style={{ padding: "11px 14px", color: "#2d9c6b", fontWeight: 600 }}>{a.answered}</td>
                 <td style={{ padding: "11px 14px", color: "#d94f4f", fontWeight: 600 }}>{a.notAnswered}</td>
                 <td style={{ padding: "11px 14px" }}>
