@@ -11,8 +11,15 @@ import TrendChart           from "@/components/TrendChart";
 import AgentTable           from "@/components/AgentTable";
 import AgentResolutionChart from "@/components/AgentResolutionChart";
 import CallsDashboard       from "@/components/CallsDashboard";
+import PivotDashboard       from "@/components/PivotDashboard";
 
-type Tab = "tickets" | "calls";
+type Tab = "tickets" | "calls" | "pivot";
+
+const TABS: { key: Tab; label: string }[] = [
+  { key: "tickets", label: "🎫 Ticket Resolution" },
+  { key: "calls",   label: "📞 Call Analytics"    },
+  { key: "pivot",   label: "📋 Agent Pivot"        },
+];
 
 export default function DashboardPage() {
   const [allTickets,  setAllTickets]  = useState<Ticket[]>([]);
@@ -52,13 +59,11 @@ export default function DashboardPage() {
 
       {/* Tab bar */}
       <div style={{ background: "#fff", borderBottom: "1px solid var(--border)", padding: "0 32px", display: "flex", gap: 0 }}>
-        {([
-          { key: "tickets", label: "🎫 Ticket Resolution" },
-          { key: "calls",   label: "📞 Call Analytics" },
-        ] as { key: Tab; label: string }[]).map((t) => (
+        {TABS.map((t) => (
           <button key={t.key} onClick={() => setActiveTab(t.key)} style={{
-            padding: "14px 20px", fontSize: 13, fontWeight: activeTab === t.key ? 700 : 400,
-            color: activeTab === t.key ? "#3266ad" : "var(--text-muted)",
+            padding: "14px 20px", fontSize: 13,
+            fontWeight: activeTab === t.key ? 700 : 400,
+            color:      activeTab === t.key ? "#3266ad" : "var(--text-muted)",
             background: "transparent", border: "none", cursor: "pointer",
             borderBottom: activeTab === t.key ? "2px solid #3266ad" : "2px solid transparent",
             transition: "all 0.15s",
@@ -70,6 +75,9 @@ export default function DashboardPage() {
 
       {/* Calls tab */}
       {activeTab === "calls" && <CallsDashboard />}
+
+      {/* Pivot tab */}
+      {activeTab === "pivot" && <PivotDashboard />}
 
       {/* Tickets tab */}
       {activeTab === "tickets" && (
@@ -98,22 +106,18 @@ export default function DashboardPage() {
                 <SectionTitle>Channel breakdown</SectionTitle>
                 <ChannelChart tickets={allTickets} />
               </div>
-
               <div style={card}>
                 <SectionTitle>Ticket trend</SectionTitle>
                 <TrendChart tickets={allTickets} />
               </div>
-
               <div style={card}>
                 <SectionTitle>Agent resolution time</SectionTitle>
                 <AgentResolutionChart tickets={allTickets} />
               </div>
-
               <div style={card}>
                 <SectionTitle>Agent performance · click headers to sort</SectionTitle>
                 <AgentTable tickets={allTickets} />
               </div>
-
               <div style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center", marginTop: 8, paddingBottom: 32 }}>
                 Response time based on Initial / Total Response Time columns (seconds → minutes).
               </div>
