@@ -12,13 +12,15 @@ import AgentTable           from "@/components/AgentTable";
 import AgentResolutionChart from "@/components/AgentResolutionChart";
 import CallsDashboard       from "@/components/CallsDashboard";
 import PivotDashboard       from "@/components/PivotDashboard";
+import EmailDashboard       from "@/components/EmailDashboard";
 
-type Tab = "tickets" | "calls" | "pivot";
+type Tab = "tickets" | "calls" | "pivot" | "email";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "tickets", label: "🎫 Ticket Resolution" },
   { key: "calls",   label: "📞 Call Analytics"    },
   { key: "pivot",   label: "📋 Agent Pivot"        },
+  { key: "email",   label: "📧 Email Analytics"    },
 ];
 
 export default function DashboardPage() {
@@ -58,10 +60,10 @@ export default function DashboardPage() {
       <Header onRefresh={load} lastRefresh={lastRefresh} />
 
       {/* Tab bar */}
-      <div style={{ background: "#fff", borderBottom: "1px solid var(--border)", padding: "0 32px", display: "flex", gap: 0 }}>
+      <div style={{ background: "#fff", borderBottom: "1px solid var(--border)", padding: "0 32px", display: "flex", gap: 0, overflowX: "auto" }}>
         {TABS.map((t) => (
           <button key={t.key} onClick={() => setActiveTab(t.key)} style={{
-            padding: "14px 20px", fontSize: 13,
+            padding: "14px 20px", fontSize: 13, whiteSpace: "nowrap",
             fontWeight: activeTab === t.key ? 700 : 400,
             color:      activeTab === t.key ? "#3266ad" : "var(--text-muted)",
             background: "transparent", border: "none", cursor: "pointer",
@@ -73,16 +75,12 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Calls tab */}
-      {activeTab === "calls" && <CallsDashboard />}
+      {activeTab === "calls"  && <CallsDashboard />}
+      {activeTab === "pivot"  && <PivotDashboard />}
+      {activeTab === "email"  && <EmailDashboard />}
 
-      {/* Pivot tab */}
-      {activeTab === "pivot" && <PivotDashboard />}
-
-      {/* Tickets tab */}
       {activeTab === "tickets" && (
         <main style={{ padding: "28px 32px", maxWidth: 1400, margin: "0 auto" }}>
-
           {loading && (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 320, color: "var(--text-muted)", fontSize: 15, gap: 10 }}>
               <span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⟳</span>
@@ -90,7 +88,6 @@ export default function DashboardPage() {
               <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             </div>
           )}
-
           {!loading && error && (
             <div style={{ padding: "20px 24px", background: "#fde8e8", border: "1px solid #f0c0c0", borderRadius: 12, color: "#a00", fontSize: 14, marginBottom: 24 }}>
               <b>Failed to load data:</b> {error}
@@ -99,7 +96,6 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
-
           {!loading && !error && (
             <>
               <div style={card}>
